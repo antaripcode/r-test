@@ -46,7 +46,7 @@ export function useChangePassword() {
 
     const confirmPasswordRules = computed(() => [
         (v) => !!v || i18n.global.t('profile.confirmPasswordRequired'),
-        (v) => v === newPassword.value || i18n.global.t('profile.passwordsMatch'),
+        (v) => v === newPassword.value || i18n.global.t('profile.CCCpasswordsMatch'),
     ]);
 
     const specialCharColor = computed(() =>
