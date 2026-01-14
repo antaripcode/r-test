@@ -45,7 +45,7 @@ export function useChangePassword() {
     ]);
 
     const confirmPasswordRules = computed(() => [
-        (v) => !!v || i18n.global.t('profile.confirmPasswordRequired'),
+        (v) => !!v || i18n.global.t('profile.confirmPasswordRequiredj'),
         (v) => v === newPassword.value || i18n.global.t('profile.CCCpasswordsMatch'),
     ]);
 
