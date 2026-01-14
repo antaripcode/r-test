@@ -4,16 +4,17 @@ on:
   pull_request:
     branches:
       - main
-      - develop
+
   push:
     branches:
       - main
-      - develop
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
 
     steps:
       - name: Checkout PR code
