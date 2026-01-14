@@ -34,7 +34,7 @@ export function useChangePassword() {
     };
 
     const currentPasswordRules = computed(() => [
-        (v) => !!v || i18n.global.t('profile.currentPasswordRequired'),
+        (v) => !!v || i18n.global.t('profile.Test1'),
     ]);
 
     const passwordRules = computed(() => [
