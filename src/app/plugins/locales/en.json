@@ -87,6 +87,7 @@
     "actions": "Actions"
   },
   "profile": {
+    "testone": "test",
     "title": "Profile",
     "username": "Username",
     "email": "Email",

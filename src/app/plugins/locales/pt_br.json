@@ -75,6 +75,7 @@
     "test": "um Estudo"
   },
   "profile": {
+    "testone": "test",
     "title": "Perfil",
     "superAdmin": "Super Administrador",
     "username": "Nome de usuário",

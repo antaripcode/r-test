@@ -70,6 +70,7 @@
     "test": "une Étude"
   },
   "profile": {
+    "testone": "test",
     "title": "Profil",
     "username": "Nom d'utilisateur",
     "email": "E-mail",
