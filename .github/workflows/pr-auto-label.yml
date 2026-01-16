@@ -194,8 +194,13 @@ jobs:
               }
             }
 
-            // Get existing labels
-            const existingLabels = pr.labels.map(l => l.name);
+            // Refetch PR to get current labels (they may have been modified during validation)
+            const { data: updatedPR } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            const existingLabels = updatedPR.labels.map(l => l.name);
 
             // Remove old size and complexity labels if they exist
             const sizeLabels = ["size/XS", "size/S", "size/M", "size/L", "size/XL"];
