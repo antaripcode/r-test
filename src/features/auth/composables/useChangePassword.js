@@ -38,7 +38,7 @@ export function useChangePassword() {
     ]);
 
     const passwordRules = computed(() => [
-        (v) => !!v || i18n.global.t('profile.passwordRequired'),
+        (v) => !!v || i18n.global.t('profile.testkey'),
         (v) => (v && v.length >= 8) || i18n.global.t('profile.passwordMinLength'),
         (v) => (v && /[A-Z]/.test(v)) || i18n.global.t('profile.passwordUppercase'),
         (v) => (v && hasSpecialChar(v)) || i18n.global.t('profile.passwordSymbol'),
