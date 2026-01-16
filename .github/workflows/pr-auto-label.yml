@@ -5,6 +5,7 @@ on:
     types:
       - opened
       - synchronize
+      - edited 
 
 permissions:
   pull-requests: write
@@ -128,29 +129,52 @@ jobs:
                 descriptionIssues.push("- Missing issue reference (e.g., 'Fixes #123')");
               }
 
-              // If there are validation issues, comment and add label
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+
+              const botComment = comments.find(c =>
+                c.body.includes("PR Description Issues Detected")
+              );
+
+              // ❌ Issues still exist
               if (descriptionIssues.length > 0) {
                 labelsToAdd.push("needs-description");
-                
-                const warningComment = `⚠️ **PR Description Issues Detected**\n\n${descriptionIssues.join("\n")}\n\nPlease update the PR description to address these issues.`;
-                
-                // Check if we already commented
-                const { data: comments } = await github.rest.issues.listComments({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                });
-                
-                const alreadyCommented = comments.some(c => c.body.includes("PR Description Issues Detected"));
-                
-                if (!alreadyCommented) {
+
+                const warningComment =
+                  `⚠️ **PR Description Issues Detected**\n\n` +
+                  `${descriptionIssues.join("\n")}\n\n` +
+                  `Please update the PR description to address these issues.`;
+
+                if (botComment) {
+                  // FIX: update existing comment
+                  await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: botComment.id,
+                    body: warningComment,
+                  });
+                } else {
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: prNumber,
                     body: warningComment,
                   });
-                  console.log("Posted description validation comment");
+                }
+              }
+
+              // All issues fixed
+              if (descriptionIssues.length === 0) {
+                if (botComment) {
+                  // FIX: delete comment
+                  await github.rest.issues.deleteComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: botComment.id,
+                  });
                 }
               }
             }
@@ -161,9 +185,8 @@ jobs:
             // Remove old size and complexity labels if they exist
             const sizeLabels = ["size/XS", "size/S", "size/M", "size/L", "size/XL"];
             const complexityLabels = ["low-complexity", "medium-complexity", "high-complexity"];
-            const labelsToRemove = [...sizeLabels, ...complexityLabels];
 
-            for (const label of labelsToRemove) {
+            for (const label of [...sizeLabels, ...complexityLabels]) {
               if (existingLabels.includes(label) && !labelsToAdd.includes(label)) {
                 try {
                   await github.rest.issues.removeLabel({
@@ -172,10 +195,22 @@ jobs:
                     issue_number: prNumber,
                     name: label,
                   });
-                  console.log(`Removed label: ${label}`);
-                } catch (error) {
-                  console.log(`Could not remove label ${label}: ${error.message}`);
-                }
+                } catch (_) {}
+              }
+            }
+
+            // FIX: remove needs-description label when clean
+            if (
+              existingLabels.includes("needs-description") &&
+              !labelsToAdd.includes("needs-description")
+            ) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: "needs-description",
+              });
+            }
               }
             }
 
@@ -188,7 +223,4 @@ jobs:
                 issue_number: prNumber,
                 labels: newLabels,
               });
-              console.log(`Added labels: ${newLabels.join(", ")}`);
-            } else {
-              console.log("No new labels to add");
             }
