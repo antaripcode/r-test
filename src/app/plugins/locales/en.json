@@ -87,6 +87,7 @@
     "actions": "Actions"
   },
   "profile": {
+    "testkey": "a",
     "title": "Profile",
     "username": "Username",
     "email": "Email",

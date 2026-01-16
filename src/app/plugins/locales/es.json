@@ -75,6 +75,7 @@
     "test": "un estudio"
   },
   "profile": {
+    "testkey": "a",
     "superAdmin": "Súper Administrador",
     "title": "Perfil",
     "username": "Nombre de usuario",
