@@ -161,32 +161,37 @@ jobs:
                 issue_number: prNumber,
               });
               
-              const existingComment = comments.find(c => c.body.includes("PR Description Issues Detected"));
+              const existingComment = comments.find(c => c.body && c.body.includes("PR Description Issues Detected"));
 
               // Both rules satisfied - remove label and comment
               if (lengthValid && hasIssueRef) {
-                const existingLabels = pr.labels.map(l => l.name);
-                if (existingLabels.includes("needs-description")) {
-                  try {
-                    await github.rest.issues.removeLabel({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      issue_number: prNumber,
-                      name: "needs-description",
-                    });
-                    console.log("Removed needs-description label");
-                  } catch (error) {
+                // Try to remove label
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    name: "needs-description",
+                  });
+                  console.log("Removed needs-description label");
+                } catch (error) {
+                  if (error.status !== 404) {
                     console.log(`Could not remove label: ${error.message}`);
                   }
                 }
                 
+                // Delete comment if exists
                 if (existingComment) {
-                  await github.rest.issues.deleteComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: existingComment.id,
-                  });
-                  console.log("Deleted validation comment");
+                  try {
+                    await github.rest.issues.deleteComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: existingComment.id,
+                    });
+                    console.log("Deleted validation comment");
+                  } catch (error) {
+                    console.log(`Could not delete comment: ${error.message}`);
+                  }
                 }
               }
               // At least one rule fails - add label and comment
@@ -195,22 +200,26 @@ jobs:
                 
                 const warningComment = `⚠️ **PR Description Issues Detected**\n\n${descriptionIssues.join("\n")}\n\nPlease update the PR description to address these issues.`;
                 
-                if (existingComment) {
-                  await github.rest.issues.updateComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: existingComment.id,
-                    body: warningComment,
-                  });
-                  console.log("Updated description validation comment");
-                } else {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: prNumber,
-                    body: warningComment,
-                  });
-                  console.log("Posted description validation comment");
+                try {
+                  if (existingComment) {
+                    await github.rest.issues.updateComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: existingComment.id,
+                      body: warningComment,
+                    });
+                    console.log("Updated description validation comment");
+                  } else {
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: prNumber,
+                      body: warningComment,
+                    });
+                    console.log("Posted description validation comment");
+                  }
+                } catch (error) {
+                  console.log(`Could not manage comment: ${error.message}`);
                 }
               }
             }
