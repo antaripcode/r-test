@@ -124,7 +124,7 @@ jobs:
               }
 
               // Check for issue reference and validate it
-              const issueRefMatch = prBody.match(/(?:fixes|closes|resolves|close|fix|resolve|fixed|closed|resolved)[\s\w:]*#(\d+)/i);
+              const issueRefMatch = prBody.match(/(?:fix|close|resolve)(?:es|ed|s)?[\s:]*#(\d+)/i);
               let hasIssueRef = false;
               
               if (!issueRefMatch) {
