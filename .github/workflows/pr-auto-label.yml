@@ -55,7 +55,7 @@ jobs:
             const totalChanges = totalAdditions + totalDeletions;
             console.log(`PR has ${totalChanges} lines changed (${totalAdditions} additions, ${totalDeletions} deletions)`);
 
-            // 1. Size labels based on lines changed
+            // Size labels based on lines changed
             if (totalChanges < 10) {
               labelsToAdd.push("size/XS");
             } else if (totalChanges < 100) {
@@ -84,7 +84,7 @@ jobs:
               labelsToAdd.push("new-feature");
             }
 
-            // 2. Component-specific labels based on changed files
+            // Component-specific labels based on changed files
             const hasVueComponents = changedPaths.some(p => p.includes("src/") && (p.endsWith(".vue") || p.includes("/components/")));
             const hasFunctions = changedPaths.some(p => p.startsWith("functions/"));
             const hasTests = changedPaths.some(p => p.includes("test") || p.includes("spec") || p.includes("cypress/") || p.includes("playwright/"));
@@ -109,25 +109,49 @@ jobs:
             if (hasHeuristic) labelsToAdd.push("heuristic");
             if (hasUserTest) labelsToAdd.push("user-test");
 
-            // 5. PR Description Validation
+            // PR Description Validation
             const descriptionIssues = [];
 
-            // Detect bot PRs
+            // Skip validation for bots
             const BOT_LOGINS = new Set(['dependabot[bot]', 'github-actions[bot]']);
             const isBot = BOT_LOGINS.has(pr.user.login) || pr.user.type === 'Bot';
 
-            // Skip validation for bot PRs
             if (!isBot) {
-              // Check minimum description length (at least 20 characters)
+              // Check minimum description length
               const lengthValid = prBody.trim().length >= 20;
               if (!lengthValid) {
                 descriptionIssues.push("- Description is too short (minimum 20 characters)");
               }
 
-              // Check for issue reference
-              const hasIssueRef = /(?:fixes|closes|resolves|close|fix|resolve|fixed|closed|resolved)[\s\w:]*#\d+/i.test(prBody);
-              if (!hasIssueRef) {
+              // Check for issue reference and validate it
+              const issueRefMatch = prBody.match(/(?:fixes|closes|resolves|close|fix|resolve|fixed|closed|resolved)[\s\w:]*#(\d+)/i);
+              let hasIssueRef = false;
+              
+              if (!issueRefMatch) {
                 descriptionIssues.push("- Missing issue reference (e.g., 'Fixes #123')");
+              } else {
+                const issueNumber = parseInt(issueRefMatch[1]);
+                
+                try {
+                  const { data: issue } = await github.rest.issues.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                  });
+                  
+                  if (issue.state === 'closed') {
+                    descriptionIssues.push(`- Referenced issue #${issueNumber} is closed. Please reference an open issue.`);
+                  } else {
+                    hasIssueRef = true;
+                  }
+                } catch (error) {
+                  if (error.status === 404) {
+                    descriptionIssues.push(`- Referenced issue #${issueNumber} does not exist in this repository.`);
+                  } else {
+                    console.log(`Error checking issue #${issueNumber}: ${error.message}`);
+                    hasIssueRef = true;
+                  }
+                }
               }
 
               // Get existing comments
@@ -139,9 +163,8 @@ jobs:
               
               const existingComment = comments.find(c => c.body.includes("PR Description Issues Detected"));
 
-              // Case 4: Both rules satisfied
+              // Both rules satisfied - remove label and comment
               if (lengthValid && hasIssueRef) {
-                // Remove label
                 const existingLabels = pr.labels.map(l => l.name);
                 if (existingLabels.includes("needs-description")) {
                   try {
@@ -157,7 +180,6 @@ jobs:
                   }
                 }
                 
-                // Delete comment if exists
                 if (existingComment) {
                   await github.rest.issues.deleteComment({
                     owner: context.repo.owner,
@@ -167,14 +189,13 @@ jobs:
                   console.log("Deleted validation comment");
                 }
               }
-              // Cases 1, 2, 3: At least one rule fails
+              // At least one rule fails - add label and comment
               else if (descriptionIssues.length > 0) {
                 labelsToAdd.push("needs-description");
                 
                 const warningComment = `⚠️ **PR Description Issues Detected**\n\n${descriptionIssues.join("\n")}\n\nPlease update the PR description to address these issues.`;
                 
                 if (existingComment) {
-                  // Update existing comment
                   await github.rest.issues.updateComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -183,7 +204,6 @@ jobs:
                   });
                   console.log("Updated description validation comment");
                 } else {
-                  // Create new comment
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -195,7 +215,7 @@ jobs:
               }
             }
 
-            // Refetch PR to get current labels (they may have been modified during validation)
+            // Refetch PR to get current labels
             const { data: updatedPR } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -203,7 +223,7 @@ jobs:
             });
             const existingLabels = updatedPR.labels.map(l => l.name);
 
-            // Remove old size and complexity labels if they exist
+            // Remove old size and complexity labels
             const sizeLabels = ["size/XS", "size/S", "size/M", "size/L", "size/XL"];
             const complexityLabels = ["low-complexity", "medium-complexity", "high-complexity"];
             const labelsToRemove = [...sizeLabels, ...complexityLabels];
@@ -224,7 +244,7 @@ jobs:
               }
             }
 
-            // Add new labels (only if not already present)
+            // Add new labels
             const newLabels = labelsToAdd.filter(l => !existingLabels.includes(l));
             if (newLabels.length > 0) {
               await github.rest.issues.addLabels({
