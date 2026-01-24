@@ -20,76 +20,33 @@ jobs:
     steps:
       - name: Checkout PR code
         uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          fetch-depth: 0
+          files: |
+            **/*.js
+            **/*.vue
 
       - name: Setup Node.js
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      - name: Cache node_modules
-        id: cache-node-modules
+      - name: Cache dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/cache@v4
         with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
 
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
-
-      - name: Get changed files
-        id: files
-        uses: actions/github-script@v7
-        with:
-          script: |
-            let changed = [];
-
-            if (context.eventName === 'pull_request') {
-              const pr = context.payload.pull_request;
-              const files = await github.paginate(
-                github.rest.pulls.listFiles,
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                }
-              );
-              
-              changed = files
-                .map(f => f.filename)
-                .filter(f => f.endsWith('.js') || f.endsWith('.vue'));
-            } else {
-              const { execSync } = require('child_process');
-              const output = execSync('git diff --name-only HEAD~1 HEAD').toString();
-              changed = output
-                .split('\n')
-                .filter(f => f.endsWith('.js') || f.endsWith('.vue'));
-            }
-
-            core.setOutput('files', changed.join(' '));
-
-      - name: Cache ESLint
-        uses: actions/cache@v4
-        with:
-          path: .eslintcache
-          key: eslint-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
-          restore-keys: |
-            eslint-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
-            eslint-${{ runner.os }}-
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: npm ci --prefer-offline --no-audit --progress=false
 
       - name: Run ESLint
-        run: |
-          if [ -z "${{ steps.files.outputs.files }}" ]; then
-            echo "No JS/Vue files changed. Skipping lint."
-            exit 0
-          fi
-
-          echo "Linting changed files..."
-          npx eslint --cache --cache-location .eslintcache ${{ steps.files.outputs.files }}
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: npx eslint --cache --cache-location .eslintcache ${{ steps.changed-files.outputs.all_changed_files }}
