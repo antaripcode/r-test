@@ -89,7 +89,7 @@ const defaultActivities = [
         'https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=400&h=400&fit=crop&crop=face',
     },
     action: 'completed',
-    description: 'Usability Test for Mobile Banking App',
+    description: 'Usability Test for Mobile Banking Appa',
     attachment: {
       name: 'test-results.pdf',
       icon: 'mdi-file-pdf-box',
