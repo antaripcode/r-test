@@ -11,16 +11,16 @@
 </template>
 
 <script setup>
-import NotificationItem from '@/features/notifications/components/NotificationItem.vue';
+import NotificationItem from '@/features/notifications/components/NotificationItem.vue'
 
 defineProps({
   notifications: {
     type: Array,
     required: true,
   },
-});
+})
 
-defineEmits(['go-to-redirect', 'mark-as-read']);
+defineEmits(['go-to-redirect', 'mark-as-read'])
 </script>
 
 <style scoped>
