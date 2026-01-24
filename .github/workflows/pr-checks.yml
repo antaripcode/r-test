@@ -15,21 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
 
     steps:
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
-          # Keeping your specific ref logic
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm' # <--- This caches node_modules and speeds up 'npm ci'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -41,7 +39,7 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             if (!pr) {
-              core.setOutput('files', ''); // Handle push events to avoid errors
+              core.setOutput('files', '');
               return;
             }
 
@@ -60,9 +58,14 @@ jobs:
 
             core.setOutput('files', changed.join(' '));
 
+      - name: Cache ESLint
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: eslint-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
       - name: Run ESLint
         run: |
-          # Only run if files are found; functionality remains identical
           if [ -z "${{ steps.files.outputs.files }}" ]; then
             echo "No JS/Vue files changed. Skipping lint."
             exit 0
@@ -71,4 +74,4 @@ jobs:
           echo "Linting:"
           echo "${{ steps.files.outputs.files }}"
 
-          npx eslint ${{ steps.files.outputs.files }}
+          npx eslint --cache --cache-location .eslintcache ${{ steps.files.outputs.files }}
