@@ -54,7 +54,7 @@ export function useChangePassword() {
     );
 
     const specialCharIcon = computed(() =>
-        hasSpecialChar(newPassword.value) ? 'mdi-check-circle' : 'mdi-circle-outline'
+        hasSpecialChar(newPassword.value) ? 'mdi-check-circle' : 'mdi-circle-oultline'
     );
 
     const resetForm = () => {
