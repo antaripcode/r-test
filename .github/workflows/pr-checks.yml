@@ -31,8 +31,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
+
       - name: Install dependencies
-        run: npm ci
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
 
       - name: Get changed files
         id: files
@@ -56,7 +66,6 @@ jobs:
                 .map(f => f.filename)
                 .filter(f => f.endsWith('.js') || f.endsWith('.vue'));
             } else {
-              // For push events, get changed files from commits
               const { execSync } = require('child_process');
               const output = execSync('git diff --name-only HEAD~1 HEAD').toString();
               changed = output
@@ -70,9 +79,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .eslintcache
-          key: eslint-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: eslint-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
           restore-keys: |
-            eslint-cache-${{ runner.os }}-
+            eslint-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            eslint-${{ runner.os }}-
 
       - name: Run ESLint
         run: |
@@ -81,7 +91,5 @@ jobs:
             exit 0
           fi
 
-          echo "Linting:"
-          echo "${{ steps.files.outputs.files }}"
-
+          echo "Linting changed files..."
           npx eslint --cache --cache-location .eslintcache ${{ steps.files.outputs.files }}
