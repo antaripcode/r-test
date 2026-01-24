@@ -1,6 +1,6 @@
 // imports
 import Controller from '@/app/plugins/firebase/FirebaseFirestoreRepository'
-import { doc, onSnapshot } from "firebase/firestore"
+import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/app/plugins/firebase'
 import AnswerController from '../shared/controllers/AnswerController'
 import UserAnswer from '@/features/auth/models/UserAnswer'
@@ -38,7 +38,7 @@ export default class StudyController extends Controller {
 
       return await super.create(COLLECTION, duplicatedStudy.toFirestore())
     } catch (error) {
-      console.error("Error duplicating study:", error)
+      console.error('Error duplicating study:', error)
       throw error
     }
   }
