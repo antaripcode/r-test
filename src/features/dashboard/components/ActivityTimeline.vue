@@ -105,7 +105,7 @@ const defaultActivities = [
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
     },
     action: 'started',
-    description: 'Card Sorting Study for E-commerce Platform',
+    description: 'Card Sorting Study for E-commerce sPlatform',
     teamMembers: [
       {
         id: 1,
