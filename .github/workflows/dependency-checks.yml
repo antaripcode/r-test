@@ -27,7 +27,7 @@ jobs:
       # 1. Security Audit
       - name: Security Vulnerability Scan
         run: |
-          echo "🔍 Scanning root dependencies..."
+          echo "Scanning root dependencies..."
           npm audit --json > audit-root.json || true
 
           # Check for critical/high vulnerabilities
@@ -50,7 +50,7 @@ jobs:
             
             exit 1
           else
-            echo "✅ No critical or high vulnerabilities found"
+            echo "No critical or high vulnerabilities found"
           fi
 
       # 3. Auto-test Dependabot PRs
@@ -66,14 +66,14 @@ jobs:
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
-          echo "📄 Checking licenses..."
+          echo "Checking licenses..."
           npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense" --summary
 
       # 5. Lockfile Validation
       - name: Validate Lockfiles
         if: github.event_name == 'pull_request'
         run: |
-          echo "🔒 Validating root lockfile..."
+          echo "Validating root lockfile..."
           npm ci --dry-run
           git diff --exit-code package-lock.json || {
             echo "::error::package-lock.json is out of sync"
@@ -89,7 +89,7 @@ jobs:
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: '🚨 Security Vulnerabilities Detected',
+              title: 'Security Vulnerabilities Detected',
               labels: ['security', 'dependencies', 'priority-high'],
               body: `## Security Scan Failed
               
