@@ -46,6 +46,7 @@
     "firebase": "^9.23.0",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^6.6.0",
+    "is-odd": "^3.0.1",
     "jsdoc-vuex-plugin": "^1.0.0",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.7",
