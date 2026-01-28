@@ -2,7 +2,7 @@ name: Dependency Health Check
 
 on:
   schedule:
-    - cron: '*/1 * * * *' # Every minute
+    - cron: '0 9 * * 1' # Weekly Monday 9 AM
   pull_request:
     paths:
       - 'package.json'
@@ -130,7 +130,7 @@ jobs:
 
       # 7. Create issue for security vulnerabilities (only on scheduled runs with actual issues)
       - name: Create Security Issue
-        if: github.event_name == 'schedule' && steps.audit.outputs.found_issues == 'true'
+        if: failure()
         uses: actions/github-script@v7
         with:
           script: |
