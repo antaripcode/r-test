@@ -128,7 +128,7 @@ jobs:
 
       # 7. Create issue for security vulnerabilities (only on scheduled runs)
       - name: Create Security Issue
-        if: failure() && github.event_name == 'schedule'
+        if: failure()
         uses: actions/github-script@v7
         with:
           script: |
