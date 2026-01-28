@@ -36,8 +36,11 @@ jobs:
 
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "::error::Found $CRITICAL critical and $HIGH high vulnerabilities"
+            # Only show high and critical vulnerabilities
             npm audit --audit-level=high
             exit 1
+          else
+            echo "✅ No critical or high vulnerabilities found"
           fi
 
       # 3. Auto-test Dependabot PRs
@@ -86,7 +89,7 @@ jobs:
               
               Run locally:
               \`\`\`bash
-              npm audit
+              npm audit --audit-level=high
               \`\`\`
               
               [View CI Run](${context.payload.repository.html_url}/actions/runs/${context.runId})`
