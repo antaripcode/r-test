@@ -7,8 +7,6 @@ on:
     paths:
       - 'package.json'
       - 'package-lock.json'
-      - 'functions/package.json'
-      - 'functions/package-lock.json'
   workflow_dispatch:
 
 jobs:
@@ -82,7 +80,7 @@ jobs:
 
       # Create issue for security vulnerabilities
       - name: Create Security Issue
-        if: failure() && github.event_name == 'schedule'
+        if: failure()
         uses: actions/github-script@v7
         with:
           script: |
