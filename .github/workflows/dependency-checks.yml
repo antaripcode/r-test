@@ -28,7 +28,7 @@ jobs:
       - name: Security Vulnerability Scan
         run: |
           echo "🔍 Scanning root dependencies..."
-          npm audit --audit-level=high --json > audit-root.json || true
+          npm audit --json > audit-root.json || true
 
           # Check for critical/high vulnerabilities
           CRITICAL=$(cat audit-root.json | jq '.metadata.vulnerabilities.critical // 0')
@@ -36,8 +36,18 @@ jobs:
 
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "::error::Found $CRITICAL critical and $HIGH high vulnerabilities"
-            # Only show high and critical vulnerabilities
-            npm audit --audit-level=high
+            echo ""
+            echo "# Critical and High Severity Vulnerabilities Only"
+            echo ""
+            
+            # Filter and display only critical and high vulnerabilities
+            cat audit-root.json | jq -r '
+              .vulnerabilities | 
+              to_entries[] | 
+              select(.value.severity == "critical" or .value.severity == "high") |
+              "## \(.key)\n**Severity:** \(.value.severity)\n**Via:** \(.value.via | map(if type == "string" then . else .title end) | join(", "))\n**Range:** \(.value.range)\n**Fix Available:** \(.value.fixAvailable // false)\n"
+            '
+            
             exit 1
           else
             echo "✅ No critical or high vulnerabilities found"
@@ -87,9 +97,9 @@ jobs:
               
               **Action Required:** Review and patch immediately.
               
-              Run locally:
+              Run locally to see only critical/high:
               \`\`\`bash
-              npm audit --audit-level=high
+              npm audit --json | jq '.vulnerabilities | to_entries[] | select(.value.severity == "critical" or .value.severity == "high")'
               \`\`\`
               
               [View CI Run](${context.payload.repository.html_url}/actions/runs/${context.runId})`
