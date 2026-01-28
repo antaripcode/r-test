@@ -2,7 +2,7 @@ name: Dependency Health Check
 
 on:
   schedule:
-    - cron: '0 9 * * 1' # Weekly Monday 9 AM
+    - cron: '*/1 * * * *' # Every minute
   pull_request:
     paths:
       - 'package.json'
