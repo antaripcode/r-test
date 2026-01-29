@@ -7,8 +7,6 @@ on:
     paths:
       - 'package.json'
       - 'package-lock.json'
-      - 'functions/package.json'
-      - 'functions/package-lock.json'
   workflow_dispatch:
 
 permissions:
