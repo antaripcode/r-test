@@ -126,7 +126,7 @@ jobs:
         run: |
           echo "📄 Checking licenses..."
           npm ci --loglevel=error 2>/dev/null
-          npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense" --summary
+          npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0" --summary
 
       # 6. Lockfile Validation
       - name: Validate Lockfiles
