@@ -125,6 +125,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           echo "📄 Checking licenses..."
+          npm ci
           npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense" --summary
 
       # 6. Lockfile Validation
