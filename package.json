@@ -51,6 +51,7 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.7",
     "lodash": "^4.17.21",
+    "my-gpl-package": "^1.0.0",
     "nanoid": "^5.1.6",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
