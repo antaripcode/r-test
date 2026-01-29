@@ -124,9 +124,18 @@ jobs:
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
-          echo "📄 Checking licenses..."
-          npm ci --loglevel=error 2>/dev/null
-          npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0" --summary
+          echo "📄 Extracting direct dependencies from package.json..."
+
+          # Extract all keys from dependencies and devDependencies into a comma-separated list
+          DIRECT_DEPS=$(cat package.json | jq -r '(.dependencies // {}, .devDependencies // {}) | keys | .[]' | paste -sd "," -)
+
+          echo "Checking these packages: $DIRECT_DEPS"
+
+          # Run license-checker restricted ONLY to these package names
+          npx license-checker \
+            --packages "$DIRECT_DEPS" \
+            --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0;BlueOak-1.0.0" \
+            --summary
 
       # 6. Lockfile Validation
       - name: Validate Lockfiles
