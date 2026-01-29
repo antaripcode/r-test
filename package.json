@@ -22,6 +22,7 @@
     "test-json-report": "PLAYWRIGHT_JSON_OUTPUT_NAME=results.json playwright test --browser=chromium --reporter=json"
   },
   "dependencies": {
+    "@cutoff/audio-ui-react": "^1.0.0-preview.20260123.1125",
     "@mediapipe/face_mesh": "^0.4.1633559619",
     "@tensorflow-models/face-landmarks-detection": "^1.0.6",
     "@tensorflow/tfjs": "^4.22.0",
