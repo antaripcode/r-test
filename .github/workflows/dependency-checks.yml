@@ -96,7 +96,7 @@ jobs:
 
       # 3. Fail scheduled runs if vulnerabilities exist
       - name: Fail on Existing Vulnerabilities (Scheduled)
-        if: github.event_name == 'schedule' && steps.audit.outputs.found_issues == 'true'
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.audit.outputs.found_issues == 'true'
         run: |
           echo "::error::Found ${{ steps.audit.outputs.critical }} critical and ${{ steps.audit.outputs.high }} high vulnerabilities"
           exit 1
@@ -130,7 +130,9 @@ jobs:
 
       # 7. Create issue for security vulnerabilities (only on scheduled runs with actual issues)
       - name: Create Security Issue
-        if: failure()
+        if: |
+          steps.audit.outputs.found_issues == 'true' && 
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: actions/github-script@v7
         with:
           script: |
