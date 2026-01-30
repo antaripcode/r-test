@@ -120,18 +120,30 @@ jobs:
           npm test -- --maxWorkers=2
           npm run build
 
-      # 5. License Compliance (Full Tree Scan)
+      # 5. License Compliance (Clean Output)
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
-          echo "📄 Installing dependencies to scan node_modules..."
-          npm ci --ignore-scripts --no-audit # Fast install for scanning
+          echo "📄 Installing dependencies (quiet mode)..."
+          # --no-audit and --no-fund remove extra footers
+          # --loglevel error hides all those deprecation warnings
+          npm ci --ignore-scripts --no-audit --no-fund --loglevel error
 
           echo "⚖️ Checking for prohibited licenses..."
-          npx license-checker \
+          # We use a temporary file to capture output so we only show it on failure
+          if ! npx --loglevel error license-checker \
             --production \
             --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0;BlueOak-1.0.0" \
-            --summary
+            --summary > license_results.txt 2>&1; then
+              
+              echo "::error::Prohibited license detected!"
+              cat license_results.txt
+              exit 1
+          else
+              # If it passes, just show the summary to keep logs clean
+              cat license_results.txt | grep -A 10 "UNCERTIFIED" || cat license_results.txt
+              echo "✅ All licenses compliant."
+          fi
 
       # 6. Lockfile Validation
       - name: Validate Lockfiles
