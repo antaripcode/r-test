@@ -120,17 +120,17 @@ jobs:
           npm test -- --maxWorkers=2
           npm run build
 
-      # 5. License Compliance (OSS Standard)
+      # 5. License Compliance (OSS Strict & Clean)
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
-          # 1. Ensure node_modules is fully populated first
-          npm ci --ignore-scripts --no-audit --loglevel error
+          echo "📄 Installing dependencies (quiet mode)..."
+          # Using --loglevel error to hide deprecation warnings
+          npm ci --ignore-scripts --no-audit --no-fund --loglevel error
 
-          # 2. Run a strict check
-          # --production: Only check what you ship to users
-          # --failOn unknown: Fail if a license can't be identified
-          npx license-checker \
+          echo "⚖️ Checking for prohibited or unknown licenses..."
+          # Running npx with loglevel error to hide install noise of the checker itself
+          npx --loglevel error license-checker \
             --production \
             --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0;BlueOak-1.0.0" \
             --summary
