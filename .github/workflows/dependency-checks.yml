@@ -124,11 +124,11 @@ jobs:
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
-          echo "📄 Installing dependencies (quiet mode)..."
+          echo "Installing dependencies (quiet mode)..."
           # Using --loglevel error to hide deprecation warnings
           npm ci --ignore-scripts --no-audit --no-fund --loglevel error
 
-          echo "⚖️ Checking for prohibited or unknown licenses..."
+          echo "Checking for prohibited or unknown licenses..."
           # Running npx with loglevel error to hide install noise of the checker itself
           npx --loglevel error license-checker \
             --production \
