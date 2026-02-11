@@ -98,20 +98,7 @@
     "user": "User",
     "id": "ID",
     "itemsPerPage": "Items per page:",
-    "table": {
-      "itemsPerPage": "Items per page:",
-      "type": "Type",
-      "name": "Name",
-      "tags": "Tags",
-      "owner": "Owner",
-      "evaluator": "Evaluator",
-      "status": "Status",
-      "sessionDate": "Session Date",
-      "participants": "Participants",
-      "created": "Created",
-      "noSearchResults": "No results found matching your criteria",
-      "tryAdjustingSearch": "Try adjusting your search or filters to find what you're looking for"
-    }
+
   },
   "storage": {
     "pageTitle": "Storage",
