@@ -2,7 +2,7 @@ name: Dependency Health Check
 
 on:
   schedule:
-    - cron: '0 9 * * 1' # Weekly Monday 9 AM
+    - cron: '0 9 * * 1'
   pull_request:
     paths:
       - 'package.json'
@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need history for comparison
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -32,7 +32,7 @@ jobs:
       - name: Security Vulnerability Scan
         id: audit
         run: |
-          echo "🔍 Scanning root dependencies..."
+          echo "Scanning root dependencies..."
           npm audit --json > audit-root.json || true
 
           # Check for critical/high vulnerabilities
@@ -58,14 +58,14 @@ jobs:
             '
           else
             echo "found_issues=false" >> $GITHUB_OUTPUT
-            echo "✅ No critical or high vulnerabilities found"
+            echo "No critical or high vulnerabilities found"
           fi
 
       # 2. Check if NEW dependencies introduce vulnerabilities (PR only)
       - name: Check New Dependency Vulnerabilities
         if: github.event_name == 'pull_request'
         run: |
-          echo "🔍 Checking if new changes introduce vulnerabilities..."
+          echo "Checking if new changes introduce vulnerabilities..."
 
           # Get base branch audit
           git checkout ${{ github.event.pull_request.base.sha }}
@@ -89,7 +89,7 @@ jobs:
             echo "::error::This PR introduces $NEW_CRITICAL new critical and $NEW_HIGH new high vulnerabilities"
             exit 1
           else
-            echo "✅ No new critical or high vulnerabilities introduced by this PR"
+            echo "No new critical or high vulnerabilities introduced by this PR"
           fi
 
       # 3. Fail scheduled/manual runs if vulnerabilities exist
@@ -120,7 +120,7 @@ jobs:
           npm test -- --maxWorkers=2
           npm run build
 
-      # 5. License Compliance (OSS Strict & Clean)
+      # 5. License Compliance (only when deps change)
       - name: License Compliance Check
         if: github.event_name == 'pull_request'
         run: |
@@ -139,7 +139,7 @@ jobs:
       - name: Validate Lockfiles
         if: github.event_name == 'pull_request'
         run: |
-          echo "🔒 Validating root lockfile..."
+          echo "Validating root lockfile..."
           npm ci --dry-run
           git diff --exit-code package-lock.json || {
             echo "::error::package-lock.json is out of sync"
@@ -184,7 +184,7 @@ jobs:
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: '🚨 Security Vulnerabilities Detected',
+                title: 'Security Vulnerabilities Detected',
                 labels: ['security', 'dependencies', 'priority-high'],
                 body: `## Security Scan Failed
                 
